@@ -78,7 +78,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    },
+#    'sgp_puc_virtual_ALTERAR': {
+#        'ENGINE': 'django.db.backends.mysql',
+#        'NAME': 'sgp_puc_virtual_ALTERAR',
+#        'HOST': '52.167.117.224',
+#        'PORT': '3306',
+#        'USER': 'usr.sgp_reader',
+#        'PASSWORD': 'R34D3R',
+#    }
 }
 
 
