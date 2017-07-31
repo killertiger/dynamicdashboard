@@ -4,4 +4,3 @@
 * Query Collection
 * Account
 * Query variables
-* Visualization types

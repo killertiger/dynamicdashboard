@@ -32,8 +32,10 @@ class VisualizationTypes(ChoiceEnum):
 class Query(models.Model):
     name = models.CharField(max_length=200)
     text = models.TextField()
+    description = models.TextField(null=True, blank=True)
     connection = models.ForeignKey(Connection, on_delete=models.CASCADE, null=True)
     visualization_type = models.CharField(max_length=1, choices=VisualizationTypes.choices(), null=True)
+    x_axis_field = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -41,6 +43,7 @@ class Query(models.Model):
 
 class Dashboard(models.Model):
     name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
 
     @property
     def dashboarditems(self):

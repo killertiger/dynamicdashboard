@@ -5,7 +5,7 @@ import pymysql
 from django.shortcuts import render
 from nvd3 import discreteBarChart, multiBarChart, pieChart
 
-from dashboard.models import Query, Connection, VisualizationTypes, Dashboard
+from dashboard.models import Query, Connection, Dashboard
 
 
 def execute_query(connectiondata, database, query):
@@ -23,8 +23,10 @@ def execute_query(connectiondata, database, query):
     return rows
 
 
-def createchart(visualization_type, rows):
+def createchart(visualization_type, rows, xaxisfield):
     chart = None
+    if not rows:
+        return None
 
     if visualization_type == '1':
         xdata = []
@@ -41,23 +43,23 @@ def createchart(visualization_type, rows):
 
     elif visualization_type == '2':
         chart = multiBarChart(width=500, height=400, x_axis_format=None)
+        # chart = multiBarHorizontalChart(width=500, height=400, x_axis_format=None)
 
         xdata = []
         ydata = []
 
-        isfirst = True
+
+        for row in rows:
+            xdata.append(row[xaxisfield])
+
         for key in rows[0]:
+            if key == xaxisfield:
+                continue
             for row in rows:
-                if isfirst:
-                    xdata.append(row[key])
-                else:
-                    ydata.append(row[key])
+                ydata.append(row[key])
 
-            if not isfirst:
-                chart.add_serie(name=key, y=ydata, x=xdata)
-                ydata = []
-
-            isfirst = False
+            chart.add_serie(name=key, y=ydata, x=xdata)
+            ydata = []
 
     elif visualization_type == '3':
         chart = pieChart(name='pieChart', height=400, width=400)
@@ -84,14 +86,31 @@ def createchart(visualization_type, rows):
 
     return chart
 
+
+def formatquery(variables, querytext):
+    for key in variables:
+        querytext = querytext.replace('{{' + key + '}}', variables[key])
+
+    return querytext
+
+
+def get_database_name(list, defaultDatabase):
+    if 'database' in list:
+        return list['database']
+    else:
+        return defaultDatabase
+
+
 # Create your views here.
 def queryview(request, query_id):
     query = Query.objects.get(pk=query_id)
     connection = Connection.objects.get(pk=1)
 
-    rows = execute_query(connection, connection.defaultDatabase, query.text)
+    querytext = formatquery(request.GET, query.text)
+    database = get_database_name(request.GET, connection.defaultDatabase)
+    rows = execute_query(connection, database, querytext)
 
-    chart = createchart(query.visualization_type, rows)
+    chart = createchart(query.visualization_type, rows, query.x_axis_field)
 
     return render(request, context={'rows': rows, 'chart': chart}, template_name='dashboard/query.html')
 
@@ -100,12 +119,14 @@ def dashboardview(request, dashboard_id):
     dashboard = Dashboard.objects.get(pk=dashboard_id)
 
     connection = Connection.objects.get(pk=1)
+    database = get_database_name(request.GET, connection.defaultDatabase)
 
     charts = []
 
     for dashboarditem in dashboard.dashboarditems:
-        rows = execute_query(connection, connection.defaultDatabase, dashboarditem.query.text)
-        chart = createchart(dashboarditem.query.visualization_type, rows)
+        querytext = formatquery(request.GET, dashboarditem.query.text)
+        rows = execute_query(connection, database, querytext)
+        chart = createchart(dashboarditem.query.visualization_type, rows, dashboarditem.query.x_axis_field)
         charts.append(chart)
 
     context = {'charts':  charts}

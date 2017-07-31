@@ -10,7 +10,9 @@
 </head>
 <body>
 {% for chart in charts %}
+    <div style="float: left">
     {{ chart.htmlcontent | safe }}
+    </div>
 {% endfor %}
 </body>
 </html>
