@@ -27,6 +27,7 @@ class VisualizationTypes(ChoiceEnum):
     discreteBarChart = 1
     multiBarChart = 2
     pieChart = 3
+    lineChart = 4
 
 
 class Query(models.Model):

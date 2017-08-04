@@ -3,7 +3,8 @@ from __future__ import unicode_literals
 
 import pymysql
 from django.shortcuts import render
-from nvd3 import discreteBarChart, multiBarChart, pieChart
+from nvd3 import discreteBarChart, multiBarChart, pieChart, lineChart
+import datetime, time
 
 from dashboard.models import Query, Connection, Dashboard
 
@@ -81,6 +82,27 @@ def createchart(visualization_type, rows, xaxisfield):
 
             isfirst = False
 
+    elif visualization_type == '4':
+        chart = lineChart(name='lineChart', height=400, width=1300, x_is_date=True)
+
+        xdata = []
+        ydata = []
+
+        for row in rows:
+            xdata.append(row[xaxisfield])
+
+        for key in rows[0]:
+            if key == xaxisfield:
+                continue
+            for row in rows:
+                ydata.append(row[key])
+
+
+        xdata = [datetime.datetime.strptime(s, "%m/%Y") for s in xdata]
+        xdata = [time.mktime(s.timetuple()) * 1000 for s in xdata]
+
+        chart.add_serie(name="line", y=ydata, x=xdata)
+
     if chart:
         chart.buildcontent()
 
@@ -104,7 +126,7 @@ def get_database_name(list, defaultDatabase):
 # Create your views here.
 def queryview(request, query_id):
     query = Query.objects.get(pk=query_id)
-    connection = Connection.objects.get(pk=1)
+    connection = query.connection
 
     querytext = formatquery(request.GET, query.text)
     database = get_database_name(request.GET, connection.defaultDatabase)
