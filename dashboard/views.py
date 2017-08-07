@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import uuid
 import pymysql
 from django.shortcuts import render
 from nvd3 import discreteBarChart, multiBarChart, pieChart, lineChart
@@ -38,7 +39,7 @@ def createchart(visualization_type, rows, xaxisfield):
             for row in rows:
                 ydata.append(int(row[key]))
 
-        chart = discreteBarChart(name='discreteBarChart', height=400, width=400)
+        chart = discreteBarChart(name='a' + uuid.uuid4().hex, height=400, width=400)
 
         chart.add_serie(y=ydata, x=xdata)
 
@@ -83,7 +84,7 @@ def createchart(visualization_type, rows, xaxisfield):
             isfirst = False
 
     elif visualization_type == '4':
-        chart = lineChart(name='lineChart', height=400, width=1300, x_is_date=True)
+        chart = lineChart(name='lineChart', height=400, width=1300, x_is_date=True, )
 
         xdata = []
         ydata = []
